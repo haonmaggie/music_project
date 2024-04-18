@@ -1,4 +1,6 @@
 #当自定义id为空时，进行批量补偿
+import os
+from mutagen.id3 import ID3
 def update_txxx_description(directory, target_desc):
     for root, dirs, files in os.walk(directory):
         for file in files:

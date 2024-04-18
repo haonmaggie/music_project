@@ -72,4 +72,4 @@ def extract_mp3_info():
     return jsonify({"status": "success", "message": f"MP3 info extracted from {input_dir} to {output_csv_path}."})
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=8080, debug=True)

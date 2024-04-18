@@ -5,6 +5,9 @@ import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import NearestNeighbors
 from scipy.sparse import csr_matrix
+from flask import Flask, jsonify, request
+
+app = Flask(__name__)
 
 # 假设已预处理并加载数据集为 DataFrame，且已处理好非数值特征
 data = pd.read_csv('../data/complete_dataset.csv')
@@ -32,6 +35,27 @@ scaled_matrix = scaler.fit_transform(user_song_matrix.todense())
 k = 10  # 示例K值，可根据实际情况调整
 nn = NearestNeighbors(metric='cosine', n_neighbors=k)
 nn.fit(scaled_matrix)
+
+# Web接口实现推荐
+@app.route('/recommendations/<string:user_id>', methods=['GET'])
+def recommend_music_web(user_id):
+    try:
+        top_n = int(request.args.get('top_n', 10))  # 从请求参数中获取top_n，默认为10
+
+        # 实现推荐
+        recommended_song_ids, recommended_song_scores = recommend_music(user_id, top_n=top_n)
+
+        response = {
+            'user_id': user_id,
+            'recommended_songs': [{'id': song_id, 'score': score} for song_id, score in zip(recommended_song_ids, recommended_song_scores)]
+        }
+
+        return jsonify(response), 200
+    except Exception as e:
+        return jsonify(error=str(e)), 500
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=8080, debug=True)
 
 # 实现推荐
 def recommend_music(user_id, top_n=10):
@@ -65,8 +89,8 @@ def recommend_music(user_id, top_n=10):
     return recommended_song_ids, recommended_song_scores
 
 # 示例：为用户 "0eWtfZi67r6GktMV" 推荐10首歌曲
-recommended_song_ids, recommended_song_scores = recommend_music("0eWtfZi67r6GktMV", top_n=10)
-print(f"Recommended songs for User '0eWtfZi67r6GktMV':")
+#recommended_song_ids, recommended_song_scores = recommend_music("0eWtfZi67r6GktMV", top_n=10)
+#print(f"Recommended songs for User '0eWtfZi67r6GktMV':")
 
-for song_id, score in zip(recommended_song_ids, recommended_song_scores):
-    print(f"{song_id}: {score}")
+#for song_id, score in zip(recommended_song_ids, recommended_song_scores):
+   #print(f"{song_id}: {score}")
