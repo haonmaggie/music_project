@@ -150,19 +150,16 @@ class item_similarity_recommender_py():
             print("当前用户没有可用于训练基于项目相似度推荐模型的歌曲。")
             return -1
         else:
-            # 区间0-100
-            # 计算 score 列的均值和标准差
-            # 对 score 列进行 Z-score 标准化处理
-            mean_score = df['score'].mean()
-            std_dev_score = df['score'].std()
-            # 对 score 列进行 Z-score 标准化处理
-            df['normalized_score'] = (df['score'] - mean_score) / std_dev_score
+            # 区间0-1
+            # 计算 score 列的最小值和最大值
+            min_score = df['score'].min()
+            max_score = df['score'].max()
 
-            # 将 Z-score 标准化的得分映射到0到100的区间
-            mapped_scores = (df['normalized_score'] * (100 - 0)) / 2 + 50
+            # 对 score 列进行线性归一化处理
+            df['normalized_score'] = (df['score'] - min_score) / (max_score - min_score)
 
-            # 确保映射后的得分非负且不超过100
-            df['scaled_score'] = np.clip(mapped_scores, 0, 100)
+            # 确保归一化后的得分在0到1之间
+            df['scaled_score'] = np.clip(df['normalized_score'], 0, 1)
 
         return df
 

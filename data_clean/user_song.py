@@ -2,7 +2,10 @@ import os
 import random
 import csv
 import uuid
+from typing import Union
+
 import numpy as np
+import itertools
 from collections import Counter
 from mutagen.id3 import ID3, TXXX
 from mutagen.flac import FLAC, Picture
@@ -34,9 +37,18 @@ def process_mp3_file(filepath):
         audio.add(custom_id_frame)
     else:
         audio['TXXX:Custom ID'] = custom_id_frame
+    # 遍历所有TXXX帧，寻找那些文本信息不是空的且描述为空的帧
+    frames_to_update = [frame for frame in audio.getall('TXXX')
+                        if frame.desc is None or frame.desc == ''
+                        and frame.text[0] != '']
+
+    # 更新这些帧的描述
+    for frame in frames_to_update:
+        frame.desc = 'Custom ID'
 
     # 保存更改
     audio.save(v2_version=3)  # 保存为ID3v2.3版本
+    #print("ID3标签：",audio)
 
 def process_flac_file(filepath):
     audio = FLAC(filepath)
@@ -85,89 +97,107 @@ def extract_song_custom_ids(directory):
     return songs
 
 # 从指定的CSV文件中读取用户ID列表
-def read_users_from_csv(csv_file_path):
-    users = []
-    with open(csv_file_path, "r") as user_file:
-        reader = csv.reader(user_file)
+def read_values_from_csv(csv_file_path):
+    values_list = []
+    with open(csv_file_path, "r") as csv_file:
+        reader = csv.reader(csv_file)
+        # 跳过首行（列名）
+        next(reader)
+
         for row in reader:
-            users.extend(row)
+            values_list.extend(row)
 
-    return users
+    return values_list
 
 
-def generate_play_records(users, songs, avg_plays_per_song, play_records_per_user):
+import csv
+
+def generate_and_write_play_records_to_csv(
+    users,
+    songs,
+    min_plays,
+    max_plays,
+    num_random_songs_per_user,
+    num_random_users,
+    output_file_path
+):
     """
-    Generate play records for each user based on the given parameters.
+    生成用户-歌曲-播放次数记录列表，并将记录写入CSV文件。
 
-    Args:
-        users (list[str]): List of user IDs.
-        songs (list[str]): List of song custom IDs.
-        avg_plays_per_song (float): Average number of plays per song.
-        play_records_per_user (int): Number of play records to generate per user.
+    该函数接受一个用户ID列表和一个歌曲自定义ID列表作为输入，为随机选择的一些用户随机生成指定数量的歌曲的播放次数记录。每条记录包含用户ID、歌曲ID以及对应的播放次数。生成的记录将被写入指定的CSV文件。
 
-    Returns:
-        list[tuple]: List of play records, where each record is a tuple containing (user_id, song_id).
+    参数:
+        users (List[str]): 用户ID列表，包含待生成播放记录的用户标识。
+        songs (List[str]): 歌曲自定义ID列表，代表可供用户播放的歌曲集合。
+        min_plays (int): 播放次数的最小值，默认为5。每条记录中的播放次数将在此范围内随机生成。
+        max_plays (int): 播放次数的最大值，默认为50。每条记录中的播放次数将在此范围内随机生成。
+        num_random_songs_per_user (int): 每个用户随机选择的歌曲数量。
+        num_random_users (int): 随机选择的用户数量。
+        output_file_path (str): 目标CSV文件路径，默认为 "play_records.csv"。
+
+    返回:
+        None: 不返回任何值，直接将生成的播放记录写入指定的CSV文件。
     """
-    play_records = []
+    def generate_plays_for_user(user_id: str):
+        """
+        为单个用户生成播放记录。
 
-    # Calculate the total number of plays needed across all users
-    total_plays_needed = len(users) * play_records_per_user
+        该辅助函数接收一个用户ID，针对该用户与给定的歌曲列表，为随机选择的一些歌曲生成一条包含随机播放次数的记录。
 
-    # Generate a Poisson distribution with the specified average plays per song
-    poisson_distribution = np.random.poisson(avg_plays_per_song, size=len(songs))
+        参数:
+            user_id (str): 需要为其生成播放记录的用户ID。
 
-    # Normalize the distribution so that it sums up to the total plays needed
-    distribution_sum = sum(poisson_distribution)
-    if distribution_sum != total_plays_needed:
-        poisson_distribution *= total_plays_needed / distribution_sum
+        返回:
+            List[Dict[str, Union[str, int]]]: 该用户对应的播放记录列表，每条记录的结构与主函数返回的记录相同。
+        """
 
-    # Convert the distribution to a list of tuples representing individual plays
-    plays = [(song_id, count) for song_id, count in zip(songs, poisson_distribution)]
+        random_song_subset = random.sample(songs, num_random_songs_per_user)
+        user_play_records = []
+        for song in random_song_subset:
+            play_count = random.randint(min_plays, max_plays)
+            user_play_records.append({
+                "user": user_id,
+                "song_id": song,
+                "play_count": play_count
+            })
+        return user_play_records
 
-    # Distribute the plays randomly among users
-    for user in users:
-        user_plays = random.choices(plays, weights=[count for _, count in plays], k=play_records_per_user)
-        play_records.extend([(user, song_id) for song_id, _ in user_plays])
+    # 随机选择用户并合并他们的播放记录
+    random_user_subset = random.sample(users, num_random_users)
+    all_play_records = []
+    for user in random_user_subset:
+        user_records = generate_plays_for_user(user)
+        all_play_records.extend(user_records)
 
-    return play_records
+    # Write play records to CSV file
+    with open(output_file_path, "w", newline="") as output_file:
+        writer = csv.writer(output_file)
+        writer.writerow(["user_id", "song_id", "play_count"])
+        for record in all_play_records:
+            writer.writerow([record["user"], record["song_id"], record["play_count"]])
 
-
-def write_play_records_to_csv(play_records, output_file):
-    """
-    Write the generated play records to a CSV file.
-
-    Args:
-        play_records (list[tuple]): List of play records, where each record is a tuple containing (user_id, song_id).
-        output_file (file-like object): Open file object to which the play records will be written.
-    """
-    writer = csv.writer(output_file)
-    writer.writerow(["User ID", "Song ID"])
-    for user_id, song_id in play_records:
-        writer.writerow([user_id, song_id])
 @app.route('/generate_play_records', methods=['POST'])
 def generate_play_records_api():
     data = request.get_json()
     audio_files_directory = data.get('audio_files_directory')
     users_csv_file = data.get('users_csv_file')
     output_csv_file = data.get('output_csv_file')
-    avg_plays_per_song = data.get('avg_plays_per_song')
-    play_records_per_user = data.get('play_records_per_user')
+    min_plays = data.get('min_plays')
+    max_plays = data.get('max_plays')
+    num_random_songs_per_user = data.get('num_random_songs_per_user')
+    num_random_users = data.get('num_random_users')
 
     if not audio_files_directory or not users_csv_file or not output_csv_file:
         return jsonify(error="Missing one or more required parameters: 'audio_files_directory', 'users_csv_file', 'output_csv_file'"), 400
 
     try:
         process_audio_files(audio_files_directory)
-        users = read_users_from_csv(users_csv_file)
+        users = read_values_from_csv(users_csv_file)
         songs = extract_song_custom_ids(audio_files_directory)
-
-        play_records = generate_play_records(users, songs, avg_plays_per_song, play_records_per_user)
-        with open(output_csv_file, 'w', newline='') as output_file:
-            write_play_records_to_csv(play_records, output_file)
-
+        generate_and_write_play_records_to_csv(users, songs, min_plays, max_plays, num_random_songs_per_user, num_random_users, output_csv_file)
         return jsonify(success=True, message="Play records generated and saved to CSV")
     except Exception as e:
         return jsonify(error=f"An error occurred: {str(e)}"), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080, debug=True)
+    app.run(debug=True)

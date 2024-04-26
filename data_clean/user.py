@@ -19,7 +19,7 @@ def save_to_csv(data, out_dir, filename='user_ids.csv'):
 
     with open(output_file_path, 'w', newline='') as csvfile:
         writer = csv.writer(csvfile)
-        writer.writerow(['User ID'])
+        writer.writerow(['user_id'])
 
         for user_id in data:
             writer.writerow([user_id])
