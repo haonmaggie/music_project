@@ -24,7 +24,7 @@ def process_and_recommend():
         return jsonify(error="Missing one or more required files"), 400
     # 确保文件有效并转换为 pandas DataFrame
     try:
-        music_data_df = pd.read_csv(muisc_df.read())
+        music_data_df = pd.read_csv(io.BytesIO(muisc_df.read()))
         song_count_df = pd.read_csv(io.BytesIO(song_playcount_df_file.read()))
         play_count_subset = pd.read_csv(io.BytesIO(user_playcount_df_file.read()))
         triplet_dataset_sub_song_merged = pd.read_csv(io.BytesIO(complete_dataset_file.read()))
@@ -44,11 +44,18 @@ def process_and_recommend():
         # 执行推荐
         df_recs = is_model.recommend(user_id)
         song_ids = df_recs['song_id']
-        song_df = music_data_df['custom_id', 'title']
+        song_df = music_data_df[['custom_id', 'title']]  # 正确提取两列的方式
+
+        # 根据song_ids匹配歌名
         filtered_songs = song_df[song_df['custom_id'].isin(song_ids)]
+        song_titles = filtered_songs.set_index('custom_id')['title']
+
+        # 在df_recs中添加新列'title'，注意需要保证df_recs的'song_id'与music_data_df的'custom_id'一一对应
+        df_recs = df_recs.merge(song_titles, left_on='song_id', right_index=True, how='left')
+
+        # 写入Excel，此时df_recs已包含歌名列
         with pd.ExcelWriter(output_file, engine='xlsxwriter') as writer:
             df_recs.to_excel(writer, sheet_name='Sheet1', index=False)
-
         return jsonify({'message': f'Recommendations written to {output_file}'})
 
 
