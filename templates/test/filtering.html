@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>协同过滤</title>
+    <link rel="stylesheet" href="../../static/css/style_f.css">
+</head>
+<body>
+    <div class="container">
+        <h1>协同过滤</h1>
+        <form id="recommendationForm">
+            <label for="userId">User ID:</label>
+            <input type="text" id="userId" name="user_id" placeholder="dC2DjM85ybaF8c1y" required><br><br>
+
+            <label for="outputFileName">输出excel路径:</label>
+            <input type="text" id="outputFileName" name="output_file" placeholder="E:/music/filtering.xlsx" required><br><br>
+
+            <label for="songPlaycountFile">Song Playcount CSV:</label>
+            <input type="file" id="songPlaycountFile" name="song_playcount_df" accept=".csv" required><br><br>
+
+            <label for="userPlaycountFile">User Playcount CSV:</label>
+            <input type="file" id="userPlaycountFile" name="user_playcount_df" accept=".csv" required><br><br>
+
+            <label for="completeDatasetFile">Complete Dataset CSV:</label>
+            <input type="file" id="completeDatasetFile" name="complete_dataset" accept=".csv" required><br><br>
+
+            <label for="musicDataFrame">Music Data CSV:</label>
+            <input type="file" id="musicDataFrame" name="muisc_df" accept=".csv" required><br><br>
+
+            <button type="submit">生成推荐数据excel</button>
+        </form>
+        <div id="responseMessage"></div>
+    </div>
+
+    <script src="../../static/js/filter.js"></script>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>生成完整数据集</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body { padding: 20px; }
+    </style>
+</head>
+<body>
+    <form id="uploadForm" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="mp3CsvPath">音乐详情数据集CSV:</label>
+            <input type="file" class="form-control-file" id="mp3CsvPath" name="mp3_csv_path" accept=".csv" required><br><br>
+        </div>
+
+        <div class="form-group">
+            <label for="playRecordsCsvPath">Play Records CSV:</label>
+            <input type="file" class="form-control-file" id="playRecordsCsvPath" name="play_records_csv_path" accept=".csv" required><br><br>
+        </div>
+
+        <div class="form-group">
+            <label for="outputCsvPath">完整数据集csv输出路径:</label>
+            <input type="text" class="form-control" id="outputCsvPath" name="output_csv_path"  placeholder="E:/music/play_records/comlete_dataset.csv" required>
+        </div>
+
+        <button type="submit">生成完整数据集</button>
+    </form>
+    <div id="responseMessage"></div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent form submission
+
+            // 创建FormData对象并添加文件
+            const formData = new FormData(event.target);
+
+            fetch('/generate_complete_dataset', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('statusMessage').innerText = data.message;
+                alert(data.message);
+                //跳转回首页index
+                goToIndexImmediately()
+            })
+            .catch(error => {
+                document.getElementById('statusMessage').innerText = "请求失败，请检查网络连接或文件上传是否有误。";
+                console.error("Error:", error);
+            });
+        });
+        function goToIndexImmediately() {
+        window.location.href = "/"; // 或者使用具体的首页URL
+    }
+    </script>
+</body>
+</html>
+

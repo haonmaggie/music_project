@@ -4,8 +4,6 @@ import shutil
 import tinytag
 from mutagen.mp3 import MP3
 
-app = Flask(__name__)
-
 def get_release_year(file_path, file_format):
     if file_format.lower() == '.mp3':
         audio = MP3(file_path)
@@ -38,23 +36,3 @@ def organize_audio_files(input_dir, output_root_dir):
                     dest_file_path = os.path.join(dest_folder, file)
                     shutil.move(file_path, dest_file_path)
                     print(f'Moved "{file}" to "{dest_folder}"')
-@app.route('/songToDatabase', methods=['POST'])
-def organize():
-    data = request.get_json()
-
-    input_dir = data.get('input_directory')
-    if not input_dir or not os.path.isdir(input_dir):
-        return jsonify({'error': 'Invalid input directory'}), 400
-
-    output_dir = data.get('output_directory')
-    if not output_dir:
-        return jsonify({'error': 'Missing output directory'}), 400
-
-    try:
-        organize_audio_files(input_dir,output_dir)
-        return jsonify({'message': 'Audio files organized successfully'})
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-if __name__ == '__main__':
-    app.run(debug=True)

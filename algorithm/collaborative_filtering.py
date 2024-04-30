@@ -134,7 +134,7 @@ class item_similarity_recommender_py():
         sort_index = sorted(((e, i) for i, e in enumerate(list(user_sim_scores))), reverse=True)
 
         # 以以下内容创建一个DataFrame
-        columns = ['user_id', 'song', 'score', 'rank']
+        columns = ['user_id', 'song_id', 'score', 'rank']
         # index = np.arange(1) # 数组，用于存储样本数量
         df = pd.DataFrame(columns=columns)
 

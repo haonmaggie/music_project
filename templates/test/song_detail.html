@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>音频文件信息提取</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body { padding: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1 class="text-center">输入音频文件目录和输出CSV路径</h1>
+    <form id="directoryForm">
+        <div class="form-group">
+            <label for="inputDirectory">音频文件目录路径:</label>
+            <input type="text" class="form-control" id="inputDirectory" placeholder="请输入目录路径（示例：E:/music/database）" required>
+        </div>
+        <div class="form-group">
+            <label for="outputCsvPath">输出CSV文件路径:</label>
+            <input type="text" class="form-control" id="outputCsvPath" placeholder="请输入输出CSV文件路径（示例：E:/music/play_records/music_to_csv.csv）" required>
+        </div>
+        <button type="submit" class="btn btn-primary">提交</button>
+    </form>
+    <p id="statusMessage" class="mt-3"></p>
+</div>
+
+<script>
+    document.getElementById('directoryForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const inputDir = document.getElementById('inputDirectory').value;
+        const outputCsvPath = document.getElementById('outputCsvPath').value;
+
+        if (!inputDir || !outputCsvPath) {
+            alert('请确保输入了音频文件目录路径和输出CSV文件路径！');
+            return;
+        }
+
+        // 这里仅为模拟处理，实际应用中需通过后端处理这些路径
+        const requestData = {
+            input_dir: inputDir,
+            output_csv_path: outputCsvPath
+        };
+
+        fetch('/extract_audio_info', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestData),
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            document.getElementById('statusMessage').textContent = data.message;
+            if (data.status === 'success') {
+                alert(data.message);
+                goToIndexImmediately();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('statusMessage').textContent = '处理请求时发生错误，请检查输入路径是否合法。';
+        });
+    });
+
+    function goToIndexImmediately() {
+        window.location.href = "/"; // 或者使用具体的首页URL
+    }
+</script>
+
+</body>
+</html>

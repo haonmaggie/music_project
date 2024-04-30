@@ -66,18 +66,3 @@ def extract_audio_info_to_csv(input_dir, output_csv_path):
                     if tags is not None:
                         writer.writerow(tags)
 
-@app.route('/extract_audio_info', methods=['POST'])
-def extract_audio_info():
-    # 接收请求体中的音频文件目录路径和输出CSV文件路径
-    input_dir = request.json.get('input_dir')
-    output_csv_path = request.json.get('output_csv_path')
-
-    if input_dir is None:
-        return jsonify({"status": "error", "message": "Missing required parameter 'input_dir'."}), 400
-
-    extract_audio_info_to_csv(input_dir, output_csv_path)
-
-    return jsonify({"status": "success", "message": f"Audio info extracted from {input_dir} to {output_csv_path}."})
-
-if __name__ == '__main__':
-    app.run( debug=True)

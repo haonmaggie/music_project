@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>随机生成用户ID</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body { padding: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1 class="text-center">随机生成用户ID</h1>
+    <form id="generateForm">
+        <div class="form-group">
+            <label for="numUsers">生成用户ID数量:</label>
+            <input type="number" id="numUsers" min="1" max="1000" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label for="outputDirectory">输出目录:</label>
+            <input type="text" id="outputDirectory" class="form-control" required>
+        </div>
+        <button type="submit" class="btn btn-primary">生成数据集到输出目录</button>
+    </form>
+</div>
+
+<script>
+    document.getElementById('generateForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const numUsers = document.getElementById('numUsers').value;
+        const outDir = document.getElementById('outputDirectory').value;
+
+        fetch('/generate_user_ids', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                'num_users': numUsers,
+                'out_dir': outDir,
+            }),
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.error) {
+                alert(data.error);
+            } else {
+                alert('用户ID已成功生成并保存！');
+                goToIndexImmediately()
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('生成用户ID时发生错误，请检查输入并重试。');
+        });
+    });
+    function goToIndexImmediately() {
+        window.location.href = "/"; // 或者使用具体的首页URL
+    }
+</script>
+
+</body>
+</html>

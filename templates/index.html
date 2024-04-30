@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>首页</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+        .card-container {
+            max-width: 600px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .step {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .step-number {
+            width: 50px;
+            height: 50px;
+            line-height: 50px;
+            text-align: center;
+            background-color: #f1c40f;
+            color: white;
+            font-weight: bold;
+            border-radius: 50%;
+            margin-right: 20px;
+        }
+        .step-description {
+            flex-grow: 1;
+            text-align: left;
+        }
+        a {
+            display: block;
+            text-decoration: none;
+            color: #343a40;
+            transition: color 0.3s ease;
+        }
+        a:hover {
+            color: #f1c40f;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card-container">
+    <h1>操作指南</h1>
+    <div class="steps">
+        <div class="step">
+            <div class="step-number">1</div>
+            <div class="step-description">
+                <a href="/test/songToDatabase">进行音乐分类</a>
+            </div>
+        </div>
+        <div class="step">
+            <div class="step-number">2</div>
+            <div class="step-description">
+                <a href="/test/generate_user_ids">生成用户ID数据集</a>
+            </div>
+        </div>
+        <div class="step">
+            <div class="step-number">3</div>
+            <div class="step-description">
+                <a href="/test/play_records">生成用户-歌曲-播放次数数据集</a>
+            </div>
+        </div>
+        <div class="step">
+            <div class="step-number">4</div>
+            <div class="step-description">
+                <a href="/test/song_detail">生成歌曲详情数据集</a>
+            </div>
+        </div>
+        <div class="step">
+            <div class="step-number">5</div>
+            <div class="step-description">
+                <a href="/test/play_count">生成用户-播放、歌曲-播放数据集</a>
+            </div>
+        </div>
+        <div class="step">
+            <div class="step-number">6</div>
+            <div class="step-description">
+                <a href="/test/cpmplete_data">生成完整数据集</a>
+            </div>
+        </div>
+        <div class="step">
+            <div class="step-number">7</div>
+            <div class="step-description">
+                <a href="/test/filter">协同过滤推荐</a>
+            </div>
+        </div>
+        <div class="step">
+            <div class="step-number">8</div>
+            <div class="step-description">
+                <a href="/test/svd">SVD矩阵分解推荐</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

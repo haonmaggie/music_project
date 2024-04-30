@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>生成播放记录表单</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">生成播放记录</h1>
+        <form id="playRecordsForm">
+            <div class="form-group">
+                <label for="audioDirectory">音频文件目录:</label>
+                <input type="text" class="form-control" id="audioDirectory" name="audio_files_directory" placeholder="E:/music/database" required>
+            </div>
+            <div class="form-group">
+                <label for="usersCsvFile">用户ID CSV文件:</label>
+                <input type="text" class="form-control" id="usersCsvFile" name="users_csv_file" placeholder="E:/music/userids/user_ids.csv" required>
+            </div>
+            <div class="form-group">
+                <label for="outputCsvFile">输出播放记录CSV文件名:</label>
+                <input type="text" class="form-control" id="outputCsvFile" name="output_csv_file" placeholder="E:/music/play_records/play_records.csv" required>
+            </div>
+            <!-- 数值输入字段 -->
+            <div class="form-group">
+                <label for="minPlays">最小播放次数:</label>
+                <input type="number" class="form-control" id="minPlays" name="min_plays" min="1" placeholder="5" required>
+            </div>
+            <div class="form-group">
+                <label for="maxPlays">最大播放次数:</label>
+                <input type="number" class="form-control" id="maxPlays" name="max_plays" min="1" placeholder="40" required>
+            </div>
+            <div class="form-group">
+                <label for="randomSongsPerUser">每用户随机歌曲数:</label>
+                <input type="number" class="form-control" id="randomSongsPerUser" name="num_random_songs_per_user" min="1" placeholder="30" required>
+            </div>
+            <div class="form-group">
+                <label for="randomUsers">随机用户数:</label>
+                <input type="number" class="form-control" id="randomUsers" name="num_random_users" min="1" placeholder="400" required>
+            </div>
+            <button type="submit" class="btn btn-primary">生成播放记录</button>
+        </form>
+        <p id="responseMessage" class="mt-3"></p>
+    </div>
+
+    <script>
+        document.getElementById('playRecordsForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            // 获取表单数据，注意文件需要特殊处理
+            const audioDirectory = document.getElementById('audioDirectory').value;
+            const usersCsvFile = document.getElementById('usersCsvFile').value;
+            const outputCsvFile = document.getElementById('outputCsvFile').value;
+            const minPlays = document.getElementById('minPlays').value;
+            const maxPlays = document.getElementById('maxPlays').value;
+            const randomSongsPerUser = document.getElementById('randomSongsPerUser').value;
+            const randomUsers = document.getElementById('randomUsers').value;
+
+            // 发送POST请求到后端
+            fetch('/generate_play_records', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                'audio_files_directory': audioDirectory,
+                'users_csv_file': usersCsvFile,
+                'output_csv_file': outputCsvFile,
+                'min_plays': minPlays,
+                'max_plays': maxPlays,
+                'num_random_songs_per_user': randomSongsPerUser,
+                'num_random_users': randomUsers
+            }),
+            })
+            .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+            })
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    alert('用户播放记录已成功生成并保存！');
+                    goToIndexImmediately()
+                }
+            })
+            .catch(error => {
+                //document.getElementById('responseMessage').innerText = "请求失败，请检查网络连接。";
+                console.error("Error:", error);
+                alert('用户播放记录生成失败，请检查输入并重试')
+            });
+        });
+        function goToIndexImmediately() {
+        window.location.href = "/"; // 或者使用具体的首页URL
+    }
+    </script>
+</body>
+</html>

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>音频文件整理器</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: auto;
+            padding: 20px;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        button {
+            padding: 10px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+<h1>音频文件整理工具</h1>
+
+<form id="organizeForm">
+    <label for="inputDirectory">输入目录（音频文件所在）:</label>
+    <input type="text" id="inputDirectory" placeholder="E:/music/华语歌曲" required>
+    <label for="outputDirectory">输出目录（整理后）:</label>
+    <input type="text" id="outputDirectory" placeholder="E:/music/database" required>
+    <button type="submit">开始整理</button>
+</form>
+
+<script>
+    document.getElementById('organizeForm').addEventListener('submit', function(event) {
+        event.preventDefault(); // 阻止表单默认提交行为
+
+        const inputDir = document.getElementById('inputDirectory').value;
+        const outputDir = document.getElementById('outputDirectory').value;
+
+        fetch('/songToDatabase', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                'input_directory': inputDir,
+                'output_directory': outputDir,
+            }),
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.error) {
+                alert(data.error);
+            } else {
+                alert(data.message);
+                //跳转回首页index
+                goToIndexImmediately
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('发生错误，请检查输入路径并重试。');
+        });
+    });
+    function goToIndexImmediately() {
+        window.location.href = "/"; // 或者使用具体的首页URL
+    }
+</script>
+
+</body>
+</html>
